@@ -1,0 +1,30 @@
+defaults:
+  - _self_
+  - network
+  - override hydra/hydra_logging: disabled  
+  - override hydra/job_logging: disabled 
+
+gelsightSensor_numbers:
+  - 2
+  - 4 
+  - 6
+  - 8
+
+
+
+
+
+
+
+
+
+gelsight_configs: # maximale Auflösung von 3280x2464 möglich - bottleneck ist vermutlich BYOL (resnet 18 ist auf 224x224 trainiert) und der Rechner, ob der es schafft die Daten genug schnell zu verarbeiten
+  width: 320
+  height: 240
+
+hydra:  
+  output_subdir: null  
+  run:  
+    dir: .
+
+

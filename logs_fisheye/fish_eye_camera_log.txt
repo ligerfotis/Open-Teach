@@ -1,0 +1,45 @@
+cam_idx: 0, stream_oculus: True
+tcp://0.0.0.0:10005
+stream_configs['host']:  10005
+STREAMING HERE IN FISH EYE CAM: 2
+Cam Id is  2
+Cap is  True
+self.configs.host_address:  0.0.0.0
+self.configs.fish_eye_cam_port_offset:  10005
+***************************************************************
+     Starting FishEye component
+***************************************************************
+Started the pipeline for FishEye camera: 2!
+Starting stream on 0.0.0.0:10005...
+
+Starting oculus stream on port: 10505
+
+Shutting down pipeline for camera 2.
+Closing the publisher socket in 0.0.0.0:10005.
+Closing the publisher in 0.0.0.0:10505.
+Traceback (most recent call last):
+  File "fish_eye_camera.py", line 16, in <module>
+    main()
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/main.py", line 99, in decorated_main
+    config_name=config_name,
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/utils.py", line 401, in _run_hydra
+    overrides=overrides,
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/utils.py", line 458, in _run_app
+    lambda: hydra.run(
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/utils.py", line 461, in <lambda>
+    overrides=overrides,
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/hydra.py", line 127, in run
+    configure_logging=with_log_configuration,
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+  File "fish_eye_camera.py", line 13, in main
+    process.join()
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/multiprocessing/process.py", line 140, in join
+    res = self._popen.wait(timeout)
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/multiprocessing/popen_fork.py", line 48, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/multiprocessing/popen_fork.py", line 28, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+KeyboardInterrupt

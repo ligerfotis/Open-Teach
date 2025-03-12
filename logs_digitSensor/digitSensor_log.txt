@@ -1,0 +1,39 @@
+digitSens_Nr: 0
+tcp://0.0.0.0:10015
+DigitSens Id is  D20843
+Digitsensor-streamer-fps:  30
+Digitsensor-streamer-resolution:  {'width': 640, 'height': 480}
+***************************************************************
+     Starting DigitSensor component
+***************************************************************
+Started the pipeline for DigitSensor: D20843!
+Starting stream on 0.0.0.0:10015...
+
+Shutting down pipeline for the digitSensor D20843.
+Closing the publisher socket in 0.0.0.0:10015.
+Traceback (most recent call last):
+  File "digitSensorStartup.py", line 16, in <module>
+    main()
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/main.py", line 99, in decorated_main
+    config_name=config_name,
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/utils.py", line 401, in _run_hydra
+    overrides=overrides,
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/utils.py", line 458, in _run_app
+    lambda: hydra.run(
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/utils.py", line 461, in <lambda>
+    overrides=overrides,
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/_internal/hydra.py", line 127, in run
+    configure_logging=with_log_configuration,
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+  File "digitSensorStartup.py", line 13, in main
+    process.join()
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/multiprocessing/process.py", line 140, in join
+    res = self._popen.wait(timeout)
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/multiprocessing/popen_fork.py", line 48, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+  File "/home/clemens/anaconda3/envs/openteach_isaac/lib/python3.7/multiprocessing/popen_fork.py", line 28, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+KeyboardInterrupt

@@ -45,6 +45,7 @@ class RGBImageRecorder(Recorder):
             self.recorder = cv2.VideoWriter(
                 self._recorder_file_name, 
                 cv2.VideoWriter_fourcc(*'XVID'), 
+                #cv2.VideoWriter_fourcc(*'MJPG'), 
                 CAM_FPS_SIM, 
                 IMAGE_RECORD_RESOLUTION_SIM
             )
@@ -52,6 +53,7 @@ class RGBImageRecorder(Recorder):
             self.recorder = cv2.VideoWriter(
                 self._recorder_file_name, 
                 cv2.VideoWriter_fourcc(*'XVID'), 
+                #cv2.VideoWriter_fourcc(*'MJPG'), 
                 CAM_FPS, 
                 IMAGE_RECORD_RESOLUTION
             )
@@ -177,8 +179,13 @@ class FishEyeImageRecorder(Recorder):
         host,
         image_stream_port,
         storage_path,
-        filename
+        filename,
+        resolution         # selbst hinzugefügte Zeile (wurde auch im openteach/components/initializers.py angepasst)
     ):
+        
+        #print("host:" , host)
+        #print("image_stream_port:" , image_stream_port)
+        
         self.notify_component_start('RGB stream: {}'.format(image_stream_port))
         
         # Subscribing to the image stream port
@@ -199,12 +206,18 @@ class FishEyeImageRecorder(Recorder):
         self._metadata_filename = os.path.join(storage_path, filename + '.metadata')
         self._pickle_filename = os.path.join(storage_path, filename + '.pkl')
 
+        #print("CAM_FPS: ", CAM_FPS)
+        #print("IMAGE_RECORD_RESOLUTION: ", IMAGE_RECORD_RESOLUTION)
+        #print("resolution camera: ", resolution)
         # Initializing the recorder
         self.recorder = cv2.VideoWriter(
             self._recorder_file_name, 
             cv2.VideoWriter_fourcc(*'XVID'), 
+            #cv2.VideoWriter_fourcc(*'MJPG'), 
+            #cv2.VideoWriter_fourcc(*'YUYV'),   # in dem Format scheint die Abspeicherung nicht zu funktionieren
             CAM_FPS, 
-            IMAGE_RECORD_RESOLUTION
+            #IMAGE_RECORD_RESOLUTION    originale Zeile
+            resolution
         )
         self.timestamps = []
         self.frames = []
@@ -222,6 +235,7 @@ class FishEyeImageRecorder(Recorder):
             try:
                 self.timer.start_loop()
                 image, timestamp = self.image_subscriber.recv_rgb_image()
+
                 self.recorder.write(image)
                 self.timestamps.append(timestamp)
 

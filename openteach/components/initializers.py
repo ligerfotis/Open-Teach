@@ -5,9 +5,14 @@ from .recorders.image import RGBImageRecorder, DepthImageRecorder, FishEyeImageR
 from .recorders.robot_state import RobotInformationRecord
 from .recorders.sim_state import SimInformationRecord
 from .recorders.sensors import XelaSensorRecorder
+from .recorders.digitSensorRecorder import DigitSensRecorder
+from .recorders.gelsightSensorRecorder import GelSightSensRecorder
 from .sensors import *
+from .sensors import DigitSensor
+from .sensors import GelSightSensor
 from multiprocessing import Process
 from openteach.constants import *
+import re
 
 
 
@@ -26,7 +31,7 @@ class ProcessInstantiator(ABC):
 class RealsenseCameras(ProcessInstantiator):
     """
     Returns all the camera processes. Start the list of processes to start
-    the camera stream.
+    the camera stream."
     """
     def __init__(self, configs):
         super().__init__(configs)
@@ -64,18 +69,23 @@ class FishEyeCameras(ProcessInstantiator):
         self._init_camera_processes()
 
     def _start_component(self, cam_idx):
-        print('cam_idx: {}, stream_oculus: {}'.format(cam_idx, True if self.configs.oculus_cam == cam_idx else False))
+        #print('cam_idx: {}, stream_oculus: {}'.format(cam_idx, True if self.configs.oculus_cam == cam_idx else False)) # Original
+        print('cam_idx: {}, stream_oculus: {}'.format(cam_idx, True if self.configs.stream_oculus and self.configs.oculus_cam == cam_idx else False))  # ausgebesserte Version
         component = FishEyeCamera(
             cam_index=self.configs.fisheye_cam_numbers[cam_idx],
             stream_configs = dict(
                 host = self.configs.host_address,
                 port = self.configs.fish_eye_cam_port_offset+ cam_idx,
-                set_port_offset = self.configs.fish_eye_cam_port_offset 
+                set_port_offset = self.configs.fish_eye_cam_port_offset,
+                width = self.configs.cam_configs.width,
+                height = self.configs.cam_configs.height,
             ),
             
             stream_oculus = True if self.configs.stream_oculus and self.configs.oculus_cam == cam_idx else False,
             
         )
+        print("self.configs.host_address: ", self.configs.host_address)
+        print("self.configs.fish_eye_cam_port_offset: ", self.configs.fish_eye_cam_port_offset)
         component.stream()
 
     def _init_camera_processes(self):
@@ -85,6 +95,69 @@ class FishEyeCameras(ProcessInstantiator):
                 args = (cam_idx, )
             ))
 
+class DigitSensors(ProcessInstantiator):
+
+    def __init__(self, configs):
+        super().__init__(configs)
+        # Creating all the camera processes
+        self._init_digitSensor_processes()
+
+    def _start_component(self, digitSens_Nr):
+        print('digitSens_Nr: {}'.format(digitSens_Nr))  # ausgebesserte Version
+        
+        # die Klasse befindet sich im Ordner openteach/components/sensors/digitSensor.py
+        component = DigitSensor(
+            digitSens_Nr=self.configs.digitSensor_numbers[digitSens_Nr],
+            stream_configs = dict(
+                host = self.configs.host_address,
+                port = self.configs.digitSens_port_offset+ digitSens_Nr,
+                set_port_offset = self.configs.digitSens_port_offset,
+            )
+        )
+        
+        #print("self.configs.host_address: ", self.configs.host_address)
+        #print("self.configs.fish_eye_cam_port_offset: ", self.configs.fish_eye_cam_port_offset)
+        component.stream()
+
+    def _init_digitSensor_processes(self):
+        for digitSens_Nr in range(len(self.configs.digitSensor_numbers)):
+            self.processes.append(Process(
+                target = self._start_component,
+                args = (digitSens_Nr, )
+            ))
+
+
+class GelSightSensors(ProcessInstantiator):
+
+    def __init__(self, configs):
+        super().__init__(configs)
+        # Creating all the camera processes
+        self._init_gelsightSensor_processes()
+
+    def _start_component(self, gelsightSensor_Nr):
+        print('gelsightSens_Nr: {}'.format(gelsightSensor_Nr))  # ausgebesserte Version
+        # die Klasse befindet sich im Ordner openteach/components/sensors/digitSensor.py
+        component = GelSightSensor(
+            gelsightSensor_Nr=self.configs.gelsightSensor_numbers[gelsightSensor_Nr],
+            gelsightSensor_width = self.configs.gelsight_configs.width,
+            gelsightSensor_hight = self.configs.gelsight_configs.height,
+            stream_configs = dict(
+                host = self.configs.host_address,
+                port = self.configs.gelsightSens_port_offset+ gelsightSensor_Nr,
+                set_port_offset = self.configs.gelsightSens_port_offset,
+            )
+        )
+        
+        #print("self.configs.host_address: ", self.configs.host_address)
+        #print("self.configs.fish_eye_cam_port_offset: ", self.configs.fish_eye_cam_port_offset)
+        component.stream()
+
+    def _init_gelsightSensor_processes(self):
+        for gelsightSensor_Nr in range(len(self.configs.gelsightSensor_numbers)):
+            self.processes.append(Process(
+                target = self._start_component,
+                args = (gelsightSensor_Nr, )
+            ))
 
 class TeleOperator(ProcessInstantiator):
     """
@@ -162,21 +235,22 @@ class TeleOperator(ProcessInstantiator):
             ))
 
     
+
 # Data Collector Class
 class Collector(ProcessInstantiator):
     """
     Returns all the recorder processes. Start the list of processes 
     to run the record data.
     """
-    def __init__(self, configs, demo_num):
+    def __init__(self, configs):
         super().__init__(configs)
-        self.demo_num = demo_num
-        self._storage_path = os.path.join(
-            self.configs.storage_path, 
-            'demonstration_{}'.format(self.demo_num)
-        )
-       
-        self._create_storage_dir()
+
+        self.demonstrationSetPath = self.configs.storage_path + "/" + self.configs.demonstrationset_name
+        self._create_storage_dir(self.demonstrationSetPath)
+        highestStorageNr = self.findHighestStoragePathNumber(self.demonstrationSetPath)
+        self._storage_path = self.configs.storage_path + "/" + self.configs.demonstrationset_name + "/demoNr_" + str(highestStorageNr+1)
+
+        self._create_storage_dir(self._storage_path)
         self._init_camera_recorders()
         # Initializing the recorders
         if self.configs.sim_env is True:
@@ -189,11 +263,34 @@ class Collector(ProcessInstantiator):
         if self.configs.is_xela is True:
             self._init_sensor_recorders()
 
-    def _create_storage_dir(self):
-        if os.path.exists(self._storage_path):
+        if self.configs.is_digit is True:
+            self._init_digitSensor_recorder()
+
+        if self.configs.is_gelSight is True:
+            self._init_gelsightSensor_recorder()
+
+    # die Funktion wurde von ChatGPT geschrieben
+    def findHighestStoragePathNumber(self, folder_path):
+        highest_number = 0
+        pattern = r"^demoNr_(\d+)$"  # Muster für Verzeichnisnamen, die "demoNr_[Zahl]" entsprechen
+
+        for dir_name in os.listdir(folder_path):
+            # Prüfen, ob der Name dem Muster entspricht
+            match = re.match(pattern, dir_name)
+            if match:
+                # Extrahiere die Zahl und konvertiere sie in einen Integer
+                number = int(match.group(1))
+                # Aktualisiere das höchste gefundene Nummer
+                if number > highest_number:
+                    highest_number = number
+
+        return highest_number
+
+    def _create_storage_dir(self, dirPath):
+        if os.path.exists(dirPath):
             return 
         else:
-            os.makedirs(self._storage_path)
+            os.makedirs(dirPath)
 
     #Function to start the components
     def _start_component(self, component):
@@ -244,17 +341,30 @@ class Collector(ProcessInstantiator):
     def _init_camera_recorders(self):
         if self.configs.sim_env is not True:
             print("Camera recorder starting")
-            for cam_idx in range(len(self.configs.robot_cam_serial_numbers)):
-                #print(cam_idx)
+
+            # das if mit dem else-Bereich, wurde von mir selber hinzugefügt
+            if hasattr(self.configs, 'robot_cam_serial_numbers'):
+                for cam_idx in range(len(self.configs.robot_cam_serial_numbers)):
+                    #print(cam_idx)
+                    self.processes.append(Process(
+                        target = self._start_rgb_component,
+                        args = (cam_idx, )
+                    ))
+
+                    self.processes.append(Process(
+                        target = self._start_depth_component,
+                        args = (cam_idx, )
+                    ))
+            else:   # selbst hinzugefügter Code
+                # wenn keine Seriennummer in der Config vorhanden ist, dann wird keine realSense Kamera verwendet, sonder eine "normale"
+                # -> in diesem Fall soll das if ausgeführt werden
+                cam_idx = self.configs.oculus_cam
                 self.processes.append(Process(
-                    target = self._start_rgb_component,
+                    target = self._start_fish_eye_component,
                     args = (cam_idx, )
                 ))
 
-                self.processes.append(Process(
-                    target = self._start_depth_component,
-                    args = (cam_idx, )
-                ))
+
         else:
           
             for cam_idx in range(self.configs.num_cams):
@@ -267,6 +377,7 @@ class Collector(ProcessInstantiator):
                     target = self._start_depth_component,
                     args = (cam_idx, )
                 ))
+
 
     #Function to start the sim recorders
     def _init_sim_recorders(self):
@@ -289,7 +400,7 @@ class Collector(ProcessInstantiator):
     #Function to start the sensor recorders
     def _init_sensor_recorders(self):
         """
-        For the XELA sensors or any other sensors
+        For the XELA sensors 
         """
         for controller_config in self.configs.robot.xela_controllers:
             self.processes.append(Process(
@@ -297,13 +408,67 @@ class Collector(ProcessInstantiator):
                 args = (controller_config, )
             ))
 
+
+    #Function to start the digit sensor recorders
+    def _start_digitSens_component(self,
+        digitSens_Nr
+    ):
+        resolution = (self.configs.digitCam_configs.width, self.configs.digitCam_configs.height)
+        component = DigitSensRecorder(
+            host = self.configs.host_address,
+            image_stream_port = self.configs.digitSens_port_offset + digitSens_Nr,
+            storage_path=self._storage_path,
+            filename = 'digitSens_{}_video'.format(digitSens_Nr),
+            resolution = resolution
+        )
+        component.stream()
+
+
+    def _init_digitSensor_recorder(self):
+        '''
+        # for the DigitSensor 
+        '''
+        print("self.configs.digitSensor_numbers:", self.configs.digitCam_configs.width)
+        for digitSens_Nr in range(len(self.configs.digitSensor_numbers)):
+            self.processes.append(Process(
+                target = self._start_digitSens_component,
+                args = (digitSens_Nr, )
+            ))
+
+    #Function to start the digit sensor recorders
+    def _start_gelsightSens_component(self,
+        gelsightSens_Nr
+    ):
+        resolution = (self.configs.gelsight_configs.width, self.configs.gelsight_configs.height)
+        component = GelSightSensRecorder(
+            host = self.configs.host_address,
+            image_stream_port = self.configs.gelsightSens_port_offset + gelsightSens_Nr,
+            storage_path=self._storage_path,
+            filename = 'gelsightSens_{}_video'.format(gelsightSens_Nr),
+            resolution = resolution
+        )
+        component.stream()
+
+    def _init_gelsightSensor_recorder(self):
+        '''
+        # for the GelSight
+        '''
+        for gelsightSens_Nr in range(len(self.configs.gelsightSensor_numbers)):
+            self.processes.append(Process(
+                target = self._start_gelsightSens_component,
+                args = (gelsightSens_Nr, )
+            ))
+
+
     #Function to start the fish eye recorders
     def _start_fish_eye_component(self, cam_idx):
+        resolution = (self.configs.cam_configs.width, self.configs.cam_configs.height)  # selbst hinzugefügte Zeile
         component = FishEyeImageRecorder(
             host = self.configs.host_address,
             image_stream_port = self.configs.fish_eye_cam_port_offset + cam_idx,
             storage_path = self._storage_path,
-            filename = 'cam_{}_fish_eye_video'.format(cam_idx)
+            filename = 'cam_{}_fish_eye_video'.format(cam_idx),
+            resolution = resolution
         )
         component.stream()
 
@@ -329,7 +494,8 @@ class Collector(ProcessInstantiator):
         )
         component.stream()
 
-    #Function to start the robot recorders
+    #Function to start the robot recorders - der "robot_controller_configs" ist eigentlich ein Objekt der Klasse LeapHand
+    # des Files openteach/robot/leaphand welches hier unter den Namen robot_controller_configs weiter gegeben wird.
     def _init_robot_recorders(self):
         # Instantiating the robot classes
         for idx, robot_controller_configs in enumerate(self.configs.robot.controllers):

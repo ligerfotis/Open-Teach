@@ -19,14 +19,13 @@ class FishEyeCamera(Component):
         self._stream_configs = stream_configs
         self._stream_oculus = stream_oculus
        
-
         # Different publishers to avoid overload
         self.rgb_publisher = ZMQCameraPublisher(
             host = stream_configs['host'],
             port = stream_configs['port']#(0 if self.cam_id == 24 else self.cam_id)
         )
 
-        
+        print("stream_configs['host']: ", stream_configs['port'])
         if self._stream_oculus:
             self.rgb_viz_publisher = ZMQCompressedImageTransmitter(
                 host = stream_configs['host'],
@@ -46,8 +45,14 @@ class FishEyeCamera(Component):
         self.cap = cv2.VideoCapture(self.cam_id)
        
        
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 680)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._stream_configs['width'])
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self._stream_configs['height'])
+
+        #self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 680)
+        #self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+        #self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        #self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
        
         print("Cap is ", self.cap.isOpened())
         # Check if the camera is opened successfully, wait until it is
@@ -74,6 +79,10 @@ class FishEyeCamera(Component):
             try:
                 self.timer.start_loop()
                 color_image,timestamp = self.get_rgb_depth_images()
+
+                # turning the image into the right direction (at least for a human ;) )
+                color_image = np.flipud(color_image)
+                color_image = np.fliplr(color_image)
 
                 # Publishing the rgb images
                 self.rgb_publisher.pub_rgb_image(color_image, timestamp)

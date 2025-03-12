@@ -1,15 +1,22 @@
 defaults:
   - _self_
-  - camera
+  # das sind die Configfiles, welche ein gebunden werden sollen bei der Datacollection
+  #- camera
+  - fisheyecamera
+  - digitSensor
+  - gelsightSensor
   - network
   - robot: xela_hand_franka
   - override hydra/hydra_logging: disabled  
   - override hydra/job_logging: disabled 
 
-storage_path: extracted_data/
-demo_num: 271
+storage_path: extracted_data
+#demonstrationset_name: test
+demonstrationset_name: frankaArm_softcube_GelSightV3_evaluation_camSF1TactSF0.5_tactbs256_demoNr10
 sim_env: false
 is_xela: false
+is_digit: false #true #
+is_gelSight: true #false
 host: ${host_address}
 
 

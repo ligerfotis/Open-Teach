@@ -1,0 +1,16 @@
+defaults:
+  - _self_
+  - network
+  - override hydra/hydra_logging: disabled  
+  - override hydra/job_logging: disabled 
+
+digitSensor_numbers:
+  #- D20846
+  #- D20843
+  #- D20850
+  - D21120
+
+hydra:  
+  output_subdir: null  
+  run:  
+    dir: .

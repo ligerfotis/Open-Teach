@@ -5,17 +5,21 @@ defaults:
   - override hydra/job_logging: disabled 
 
 fisheye_cam_numbers:
-  - 24
-  - 26
+  - 10
+  #- 26
+
+#robot_cam_serial_numbers:   #wird für die Aufnahme benötigt
+#  - '202001010001'
 
 cam_configs:
   width: 640
   height: 480
-  fps: 30
-  
+  #width: 1920
+  #height: 1080
 
+#oculus_cam: cam_idx # First camera
 oculus_cam: 0 # First camera
-stream_oculus: False
+stream_oculus: True
 
 hydra:  
   output_subdir: null  
