@@ -1,14 +1,14 @@
 import numpy as np
-from copy import deepcopy as copy
+# from copy import deepcopy as copy
 from scipy.spatial.transform import Rotation as R
 
 
 
 #from openteach.ros_links.leaphand_control import DexArmControl
 from openteach.ros_links.leaphand_control import DexArmControl 
-from openteach.franka_link.otFrankaLink import OTFrankaLink
+# from openteach.franka_link.otFrankaLink import OTFrankaLink
 from openteach.constants import *
-from openteach.utils.files import get_yaml_data, get_path_in_package
+# from openteach.utils.files import get_yaml_data, get_path_in_package
 from openteach.robot.robot import RobotWrapper
 
 
